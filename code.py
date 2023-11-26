@@ -1,5 +1,18 @@
 import cv2
 
+#배경 변경 함수
+def changeBackground(mask, frame): 
+    if back1_check:
+        cv2.copyTo(back1, mask, frame)
+
+# 크로마키 배경 인식 함수
+def sensingBack(frame): 
+    if func1_check:
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, (45, 50, 0), (75, 255, 255))
+
+    return mask
+
 # 웹캠에서 영상 불러오기
 cap1 = cv2.VideoCapture(0)
 
@@ -12,6 +25,8 @@ delay = int(1000 / fps)
 
 # 합성 여부 플래그
 do_composit = False # False 면 합성을 안함. True면 크로마키 합성
+func1_check = True 
+back1_check = True 
 
 # 웹캠 영상과 배경 크기 같게 조정
 cap1.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
@@ -25,9 +40,7 @@ while True: # 무한 루프
 
     # do_composit 플래그가 True일 때에만 합성
     if do_composit:
-        hsv = cv2.cvtColor(frame1, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, (45, 50, 0), (75, 255, 255))
-        cv2.copyTo(back1, mask, frame1)
+        changeBackground(sensingBack(frame1), frame1)
 
     cv2.imshow('frame1', frame1)
     cv2.imshow('frame2', frame2)
@@ -39,6 +52,12 @@ while True: # 무한 루프
         do_composit = not do_composit
     elif key == 27: # esc 누르면 종료
         break
+
+    if do_composit:
+        if key == ord('q'):
+            func1_check = True
+        if key == ord('z'):
+            back1_check = True
         
 cap1.release()
 cv2.destroyAllWindows()
